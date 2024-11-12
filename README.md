@@ -224,15 +224,14 @@ This project was developed by Abdulkader Alrezej. Special thanks to the develope
 
 ---
 
-### References  
-1. Hagen, Silvia. *IPv6 Essentials.* O'Reilly Media.  
-2. *Flask Documentation.* Flask.  
-3. *dnslib Documentation.* dnslib.  
-4. *SQLite Documentation.* SQLite.  
-5. The Linux Foundation. *Linux Advanced Routing & Traffic Control HOWTO.*  
-6. Netfilter Project. *nftables.* Netfilter.  
-7. Python Documentation. *subprocess Module.*  
-8. Python Documentation. *http.server Module.*
+### References   
+1. *Flask Documentation.* Flask.  
+2. *dnslib Documentation.* dnslib.  
+3. *SQLite Documentation.* SQLite.  
+4. The Linux Foundation. *Linux Advanced Routing & Traffic Control HOWTO.*  
+5. Netfilter Project. *nftables.* Netfilter.  
+6. Python Documentation. *subprocess Module.*  
+7. Python Documentation. *http.server Module.*
 
 
 
