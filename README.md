@@ -73,334 +73,167 @@ The project is provided "as-is," without any express or implied warranties.
 5. Penalties
 Any unauthorized commercial use of the project without purchasing a license will be considered a violation of this agreement and may result in legal action.
 
-## Research Paper 🗒️
-Research Paper: IPv6Spot - An Innovative IPv6 Captive Portal Solution with Integrated DNS and Proxy Services
+## Research Paper 🗒️  
+**Research Paper:** *IPv6Spot - An Innovative IPv6 Captive Portal Solution with Integrated DNS and Proxy Services*
 
-Abstract
+---
 
+### Abstract  
 This paper introduces IPv6Spot, a pioneering captive portal system designed exclusively for IPv6 networks. Developed by Abdulkader Alrezej, IPv6Spot addresses the critical need for effective network access control in IPv6 environments. The system offers comprehensive features such as user authentication, dynamic IP and MAC address management, bandwidth control, usage monitoring, integrated DNS redirection, and custom proxy servers. The inclusion of custom DNS and proxy servers enhances the captive portal functionality by intercepting network requests and guiding unauthenticated users to the login page. This paper provides an in-depth examination of the system's architecture, implementation details, and the innovative approaches employed to manage IPv6 network access effectively.
 
-Introduction
+---
 
+### Introduction  
 The global transition to IPv6 is necessitated by the exhaustion of IPv4 addresses and the growing number of internet-connected devices. Despite this shift, many network management tools and captive portal solutions remain focused on IPv4, leaving a gap in support for IPv6 networks. IPv6Spot fills this gap by providing a fully functional captive portal tailored for IPv6 environments. The system not only controls network access but also integrates custom DNS and proxy servers to enhance user experience and enforce network policies effectively.
 
-Project Overview
+---
 
-IPv6Spot is a Python-based application utilizing the Flask web framework, various Linux networking utilities, a custom DNS server, and proxy servers. Key features of IPv6Spot include:
+### Project Overview  
+**IPv6Spot** is a Python-based application utilizing the Flask web framework, various Linux networking utilities, a custom DNS server, and proxy servers. Key features of IPv6Spot include:
 
-1. IPv6 Captive Portal with DNS and Proxy Redirection: Redirects unauthenticated users to a login page by intercepting DNS queries and HTTP requests, controlling network access.
+1. **IPv6 Captive Portal with DNS and Proxy Redirection:** Redirects unauthenticated users to a login page by intercepting DNS queries and HTTP requests, controlling network access.
+2. **Secure User Authentication:** Implements robust authentication mechanisms with hashed passwords and secure session management.
+3. **Dynamic IP and MAC Address Management:** Automatically detects and manages user devices based on their IPv6 addresses and MAC addresses.
+4. **Bandwidth Control and Traffic Shaping:** Utilizes Linux traffic control (`tc`) to allocate and limit bandwidth per user.
+5. **Usage Monitoring and Enforcement:** Tracks data usage and session duration, enforcing limits based on predefined user policies.
+6. **Custom DNS and Proxy Server Integration:** Employs DNS and proxy servers to manage network requests, enhancing captive portal functionality.
 
+---
 
-2. Secure User Authentication: Implements robust authentication mechanisms with hashed passwords and secure session management.
-
-
-3. Dynamic IP and MAC Address Management: Automatically detects and manages user devices based on their IPv6 addresses and MAC addresses.
-
-
-4. Bandwidth Control and Traffic Shaping: Utilizes Linux traffic control (tc) to allocate and limit bandwidth per user.
-
-
-5. Usage Monitoring and Enforcement: Tracks data usage and session duration, enforcing limits based on predefined user policies.
-
-
-6. Custom DNS and Proxy Server Integration: Employs DNS and proxy servers to manage network requests, enhancing captive portal functionality.
-
-
-
-System Architecture
-
+### System Architecture  
 The architecture of IPv6Spot is modular, comprising several interconnected components that work together to manage network access and enforce policies.
 
-Web Interface
+#### Web Interface  
+- **Flask Framework:** Manages HTTP requests, user sessions, and renders templates for the web interface.
+- **Templates and Static Files:** Provide the user interface elements such as login pages and dashboards.
 
-Flask Framework: Manages HTTP requests, user sessions, and renders templates for the web interface.
+#### Networking Layer  
+- **IP and MAC Address Management:** Utilizes system commands and the `ipaddress` module to manage IPv6 addresses and associate them with user sessions.
+- **Traffic Control:** Implements bandwidth limitations and traffic shaping using the `tc` command.
+- **Firewall Rules:** Uses `ip6tables` and `nftables` to enforce network access policies.
 
-Templates and Static Files: Provide the user interface elements such as login pages and dashboards.
+#### Database Layer  
+- **SQLite Database:** Stores user credentials, session data, IP addresses, and usage statistics.
+- **Schema Management:** Ensures the database schema supports all required fields for new features.
 
+#### Custom DNS Server  
+- **DNS Interception:** A DNS server built with the `dnslib` library intercepts DNS queries from clients.
+- **Domain Redirection:** Redirects specific DNS queries to the captive portal or blocks them based on the client's authentication status.
+- **IPv4-to-IPv6 Translation:** Converts IPv4 addresses to IPv6 format for domains that do not have IPv6 records.
 
-Networking Layer
+#### Custom Proxy Servers  
+- **HTTP Proxy Server:** Intercepts HTTP requests from clients and redirects unauthenticated users to the captive portal.
+- **Network Detection Responses:** Provides appropriate responses to network connectivity checks performed by operating systems.
 
-IP and MAC Address Management: Utilizes system commands and the ipaddress module to manage IPv6 addresses and associate them with user sessions.
+#### Background Services  
+- **Periodic IP Checks:** Monitors user activity and enforces policies through background threads.
+- **Usage Data Collection:** Continuously updates usage statistics.
 
-Traffic Control: Implements bandwidth limitations and traffic shaping using the tc command.
+---
 
-Firewall Rules: Uses ip6tables and nftables to enforce network access policies.
-
-
-Database Layer
-
-SQLite Database: Stores user credentials, session data, IP addresses, and usage statistics.
-
-Schema Management: Ensures the database schema supports all required fields for new features.
-
-
-Custom DNS Server
-
-DNS Interception: A DNS server built with the dnslib library intercepts DNS queries from clients.
-
-Domain Redirection: Redirects specific DNS queries to the captive portal or blocks them based on the client's authentication status.
-
-IPv4-to-IPv6 Translation: Converts IPv4 addresses to IPv6 format for domains that do not have IPv6 records.
-
-
-Custom Proxy Servers
-
-HTTP Proxy Server: Intercepts HTTP requests from clients and redirects unauthenticated users to the captive portal.
-
-Network Detection Responses: Provides appropriate responses to network connectivity checks performed by operating systems.
-
-
-Background Services
-
-Periodic IP Checks: Monitors user activity and enforces policies through background threads.
-
-Usage Data Collection: Continuously updates usage statistics.
-
-
-Implementation Details
-
+### Implementation Details  
 The implementation of IPv6Spot involves integrating Python scripts with system-level networking commands, a custom DNS server, and custom proxy servers.
 
-User Authentication
+#### User Authentication  
+- **Credential Security:** Uses `werkzeug.security` for password hashing and verification.
+- **Session Handling:** Manages user sessions securely using Flask's session management and secret keys.
 
-Credential Security: Uses werkzeug.security for password hashing and verification.
+#### IP and MAC Address Management  
+- **MAC Address Retrieval:** Executes `ip -6 nei` to map IPv6 addresses to MAC addresses.
+- **Dynamic IP Handling:** Adds or removes IPv6 addresses in `nftables` based on user authentication status.
 
-Session Handling: Manages user sessions securely using Flask's session management and secret keys.
+#### Traffic Control  
+- **Bandwidth Allocation:** Creates `tc` classes and filters to enforce per-user bandwidth limits.
+- **Dynamic Adjustment:** Updates `tc` rules in response to changes in user sessions.
 
+#### Firewall and Access Control  
+- **Firewall Configuration:** Manages `ip6tables` rules to control traffic based on user authentication.
+- **Nftables Integration:** Uses `nftables` for advanced packet filtering and accounting.
 
-IP and MAC Address Management
+---
 
-MAC Address Retrieval: Executes ip -6 nei to map IPv6 addresses to MAC addresses.
-
-Dynamic IP Handling: Adds or removes IPv6 addresses in nftables based on user authentication status.
-
-
-Traffic Control
-
-Bandwidth Allocation: Creates tc classes and filters to enforce per-user bandwidth limits.
-
-Dynamic Adjustment: Updates tc rules in response to changes in user sessions.
-
-
-Firewall and Access Control
-
-Firewall Configuration: Manages ip6tables rules to control traffic based on user authentication.
-
-Nftables Integration: Uses nftables for advanced packet filtering and accounting.
-
-
-Custom DNS Server
-
+### Custom DNS Server  
 The custom DNS server is a critical component that enhances the captive portal's functionality.
 
-DNS Server Overview
+#### DNS Server Overview  
+- **Library Used:** Built using the `dnslib` Python library, which allows the creation of custom DNS servers and resolvers.
+- **Server Initialization:** The DNS server listens on port 53 for both UDP and TCP connections, handling DNS queries from clients.
 
-Library Used: Built using the dnslib Python library, which allows the creation of custom DNS servers and resolvers.
+#### RedirectingResolver Class  
+- **Purpose:** A custom DNS resolver that intercepts DNS queries and redirects them based on predefined rules.
+- **Key Methods:** `resolve`, `forward_to_upstream`
 
-Server Initialization: The DNS server listens on port 53 for both UDP and TCP connections, handling DNS queries from clients.
+---
 
-
-RedirectingResolver Class
-
-Purpose: A custom DNS resolver that intercepts DNS queries and redirects them based on predefined rules.
-
-Initialization Parameters:
-
-redirect_ip_if_not_in_nft: The IPv6 address to redirect unauthenticated users.
-
-redirect_ip_if_in_nft: The IPv6 address to redirect authenticated users for specific domains.
-
-external_domains_file: A file containing additional domains to redirect or block.
-
-upstream_dns: The upstream DNS server (default is Google's 8.8.4.4).
-
-
-
-Key Methods
-
-resolve: Processes DNS queries and determines whether to redirect or forward them.
-
-forward_to_upstream: Forwards DNS queries to the upstream DNS server when no redirection is needed.
-
-
-Custom Proxy Servers
-
+### Custom Proxy Servers  
 The proxy servers further enhance the captive portal by intercepting HTTP requests and providing appropriate responses.
 
-Proxy Server for Unauthenticated Users
+#### Proxy Server for Unauthenticated Users  
+- **Purpose:** Redirects HTTP requests from unauthenticated users to the captive portal login page.
+- **Implementation:** Uses Python's `http.server` module to create a simple HTTP server.
 
-Purpose: Redirects HTTP requests from unauthenticated users to the captive portal login page.
+---
 
-Implementation:
+### Features and Functionality  
+**Enhanced Captive Portal with DNS and Proxy Redirection**  
+Improves user experience by intercepting DNS and HTTP requests, ensuring users are prompted to authenticate.
 
-Uses Python's http.server module to create a simple HTTP server.
+**Secure Authentication and Authorization**  
+Uses hashed passwords and session management tied to IP and MAC addresses.
 
-Listens on a specific IPv6 address and port.
+**Dynamic Network Management**  
+Automatically assigns IPv6 addresses and manages devices based on MAC addresses.
 
-On receiving a GET request, responds with an HTTP 302 redirect to the login page.
+**Bandwidth and Usage Enforcement**  
+Sets individual bandwidth limits and data caps.
 
+**Real-Time Monitoring and Reporting**  
+Provides real-time data on usage and enables administrative oversight.
 
-Features:
+---
 
-Minimalistic design focused on redirection.
-
-Handles requests efficiently with low overhead.
-
-
-
-Proxy Server for Network Connectivity Checks
-
-Purpose: Provides appropriate responses to network connectivity checks performed by various operating systems and devices.
-
-Implementation:
-
-Uses Python's http.server module to create a custom HTTP server.
-
-Handles specific HTTP requests by matching the hostname and path.
-
-
-Features:
-
-Responds with expected content for connectivity check URLs (e.g., connectivitycheck.gstatic.com, captive.apple.com).
-
-Ensures that devices recognize the network as having a captive portal, prompting the user to authenticate.
-
-Provides informative error pages for blocked requests, including server time and client IP.
-
-
-
-Key Methods
-
-do_GET: Overrides the default GET request handler to implement custom redirection logic.
-
-Checks the requested hostname and path.
-
-Provides appropriate HTTP responses based on predefined rules.
-
-
-Helper Functions:
-
-get_network_from_db: Retrieves the network name from the database for dynamic handling of network-specific requests.
-
-
-
-Background Services and Monitoring
-
-Periodic Checks: Background threads monitor active sessions, IP addresses, and data usage.
-
-Data Enforcement: Users exceeding data caps or session duration limits are automatically disconnected.
-
-
-Error Handling and Logging
-
-Robust Exception Handling: Catches exceptions in DNS resolution and system command executions.
-
-Logging: Logs critical events and errors for troubleshooting and auditing purposes.
-
-
-Features and Functionality
-
-Enhanced Captive Portal with DNS and Proxy Redirection
-
-User Experience: Improves the captive portal by intercepting DNS and HTTP requests, ensuring users are prompted to authenticate.
-
-Seamless Integration: The DNS and proxy servers work in conjunction with firewall rules to control network access effectively.
-
-
-Secure Authentication and Authorization
-
-Password Security: Implements secure password storage and verification.
-
-Session Binding: Associates sessions with specific IP and MAC addresses to prevent session hijacking.
-
-
-Dynamic Network Management
-
-Automatic IP Assignment: Dynamically assigns IPv6 addresses to users upon authentication.
-
-Device Recognition: Identifies devices based on MAC addresses, allowing for device-specific policies.
-
-
-Bandwidth and Usage Enforcement
-
-Per-User Limits: Sets individual bandwidth limits and data caps.
-
-Session Management: Enforces session duration limits and disconnects users who exceed their allotted time.
-
-
-Real-Time Monitoring and Reporting
-
-Usage Statistics: Provides users with real-time data on their usage and remaining quotas.
-
-Administrative Oversight: Enables administrators to monitor network usage and manage user policies.
-
-
-Security Measures
-
-DNS and HTTP Request Control: Blocks or redirects DNS and HTTP requests to prevent access to unauthorized domains or content.
-
-Anti-Spoofing Measures: Monitors network activity to detect and prevent IP or MAC address spoofing.
-
-
-Results and Testing
-
+### Results and Testing  
 IPv6Spot has been tested extensively to validate its functionality and performance.
 
-Functional Testing: Confirmed that the DNS and proxy servers correctly intercept and redirect queries and requests based on user authentication status.
+- **Functional Testing:** Confirmed the DNS and proxy servers correctly intercept and redirect queries.
+- **Performance Testing:** Ensured efficient handling without latency.
+- **Security Testing:** Tested against DNS spoofing and unauthorized access.
+- **Compatibility Testing:** Verified operation with different client devices.
 
-Performance Testing: Ensured that the servers handle queries and requests efficiently without introducing significant latency.
+---
 
-Security Testing: Tested against various attack vectors, including DNS spoofing and unauthorized access attempts.
+### Conclusion  
+IPv6Spot is an innovative solution that brings comprehensive captive portal functionality to IPv6 networks. By integrating custom DNS and proxy servers, the system enhances network access control and user experience.
 
-Compatibility Testing: Verified that the system operates correctly with different client devices and operating systems supporting IPv6.
+---
 
-
-The integration of the custom DNS and proxy servers significantly improved the user experience by ensuring that unauthenticated users are seamlessly redirected to the captive portal login page.
-
-Conclusion
-
-IPv6Spot is an innovative solution that brings comprehensive captive portal functionality to IPv6 networks. By integrating custom DNS and proxy servers, the system enhances network access control and user experience. The ability to intercept and manipulate DNS queries and HTTP requests allows IPv6Spot to enforce network policies effectively and guide users through the authentication process smoothly.
-
-The project's detailed implementation demonstrates how Python and Linux networking tools can be combined to create a robust network management system. IPv6Spot addresses a critical need in modern networking, providing a foundation for further development and adaptation as IPv6 adoption continues to grow.
-
-Future Work
-
+### Future Work  
 Potential enhancements to IPv6Spot include:
 
-Advanced DNS Features: Implement DNSSEC validation and support for more complex DNS query types.
+- **Advanced DNS Features:** DNSSEC validation, support for complex queries.
+- **Enhanced Proxy Capabilities:** HTTPS interception.
+- **Integration with Security Platforms:** Intrusion detection systems.
+- **Scalability Improvements:** Optimize for larger networks.
+- **User Interface Enhancements:** Responsive web design.
+- **Multi-Language Support:** Localized interfaces.
 
-Enhanced Proxy Capabilities: Incorporate HTTPS interception and support for additional protocols.
+---
 
-Integration with Security Platforms: Incorporate intrusion detection and prevention systems.
+### Acknowledgments  
+This project was developed by Abdulkader Alrezej. Special thanks to the developers of Flask, dnslib, SQLite, and Linux networking utilities, which were instrumental in developing this solution.
 
-Scalability Improvements: Optimize the system for larger networks with higher user volumes.
+---
 
-User Interface Enhancements: Develop a more intuitive web interface with responsive design.
+### References  
+1. Hagen, Silvia. *IPv6 Essentials.* O'Reilly Media.  
+2. *Flask Documentation.* Flask.  
+3. *dnslib Documentation.* dnslib.  
+4. *SQLite Documentation.* SQLite.  
+5. The Linux Foundation. *Linux Advanced Routing & Traffic Control HOWTO.*  
+6. Netfilter Project. *nftables.* Netfilter.  
+7. Python Documentation. *subprocess Module.*  
+8. Python Documentation. *http.server Module.*
 
-Multi-Language Support: Localize the user interface to support multiple languages.
-
-
-Acknowledgments
-
-This project was developed by Abdulkader Alrezej, whose expertise and dedication have led to the creation of IPv6Spot. Special thanks to the developers and maintainers of open-source projects such as Flask, dnslib, SQLite, and Linux networking utilities, which were instrumental in developing this solution.
-
-References
-
-Hagen, Silvia. IPv6 Essentials. O'Reilly Media.
-
-Flask Documentation. Flask.
-
-dnslib Documentation. dnslib.
-
-SQLite Documentation. SQLite.
-
-The Linux Foundation. Linux Advanced Routing & Traffic Control HOWTO. Linux Foundation.
-
-Netfilter Project. nftables. Netfilter.
-
-Python Documentation. subprocess Module. Python Docs.
-
-Python Documentation. http.server Module. Python Docs.
 
 
 
