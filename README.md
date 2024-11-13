@@ -6,7 +6,7 @@
 ## IPv6Spot Project Overview
 
 - The IPv6Spot project is the culmination of over two years of continuous work, and I am thrilled to share its progress with you. The key focus has been on addressing the challenges associated with handling temporary and multiple IPv6 addresses, which we successfully resolved through the use of MAC addresses. This approach proved to be an ideal solution, operating seamlessly without issues.
-- This captive portal project using IPv6 stands as the first of its kind worldwide, and I am delighted to announce that we have managed to overcome all hurdles to ensure that the captive portal operates smoothly with IPv6, all without relying on a DHCP server. This solution is especially beneficial, as certain systems, like Android, do not support DHCP for IPv6.
+- This captive portal project using IPv6, and I am delighted to announce that we have managed to overcome all hurdles to ensure that the captive portal operates smoothly with IPv6, all without relying on a DHCP server. This solution is especially beneficial, as certain systems, like Android, do not support DHCP for IPv6.
 - I hope this innovation resonates with you and showcases the potential of IPv6 for secure and user-friendly network experiences.
 - Some may ask, "Why transition from IPv4 to IPv6?" When using a captive portal with IPv4, it is relatively easy to breach devices via their MAC address and gain internet access by using another person's active session data. However, with IPv6, this is no longer possible.
 - **Project start date: 06/2021**
