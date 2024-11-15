@@ -1,8 +1,3 @@
-## Donate 🙏🏻💚
-- **We invite you to support the IPv6Spot project, aimed at enhancing public network security through IPv6 technology. Donate to our Bitcoin wallet, and thank you to everyone who contributes:**
-- Network:Bitcoin, Deposit Address: `17w2iiZevtWzRyQeSYhrBWrhCyQmKBqzVx`
-- Binance ID: `1004306965`
-
 ## IPv6Spot Project Overview
 
 - The IPv6Spot project is the culmination of over two years of continuous work, and I am thrilled to share its progress with you. The key focus has been on addressing the challenges associated with handling temporary and multiple IPv6 addresses, which we successfully resolved through the use of MAC addresses. This approach proved to be an ideal solution, operating seamlessly without issues.
