@@ -5,10 +5,14 @@
 
 ## IPv6Spot Project Overview
 
-- The IPv6Spot project is the culmination of over two years of continuous work, and I am thrilled to share its progress with you. The key focus has been on addressing the challenges associated with handling temporary and multiple IPv6 addresses, which we successfully resolved through the use of MAC addresses. This approach proved to be an ideal solution, operating seamlessly without issues.
-- This captive portal project using IPv6, and I am delighted to announce that we have managed to overcome all hurdles to ensure that the captive portal operates smoothly with IPv6, all without relying on a DHCP server. This solution is especially beneficial, as certain systems, like Android, do not support DHCP for IPv6.
-- I hope this innovation resonates with you and showcases the potential of IPv6 for secure and user-friendly network experiences.
-- Some may ask, "Why transition from IPv4 to IPv6?" When using a captive portal with IPv4, it is relatively easy to breach devices via their MAC address and gain internet access by using another person's active session data. However, with IPv6, this is no longer possible.
+- The IPv6Spot project is the result of more than two years of continuous work, and I’m excited to share its progress with you. The primary focus has been addressing challenges related to handling temporary and multiple IPv6 addresses caused by the use of SLAAC. We successfully overcame these issues by leveraging MAC addresses. This solution has proven to be highly effective, operating seamlessly without any problems.
+
+- This project introduces a captive portal that operates solely on IPv6, completely bypassing IPv4. I am pleased to announce that we have overcome all obstacles to ensure the smooth functionality of the captive portal using IPv6, without relying on a DHCP server. This is particularly advantageous since certain systems, such as Android, only support SLAAC and do not provide DHCP support for IPv6.
+
+- I hope this innovation resonates with you and demonstrates the potential of IPv6 in delivering secure and user-friendly network experiences.
+
+- Some might ask, "Why switch from IPv4 to IPv6?" When using a captive portal with IPv4, it is relatively easy to exploit devices through their MAC addresses, granting unauthorized internet access by hijacking an active session's credentials. However, with IPv6, this is no longer feasible. If two devices attempt to use the same MAC address on an IPv6 network, they will encounter a "network unreachable" error due to identical link-local addresses. This serves as an inherent security feature, preventing the use of duplicate MAC addresses on IPv6-enabled networks.
+
 - **Project start date: 06/2021**
 - **📌 important note: The IPv6 addresses used in the source code are for the example only, you must replace them with addresses compatible with the IPv6 standards.**
 
