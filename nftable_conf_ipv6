@@ -1,0 +1,66 @@
+#!/usr/sbin/nft -f
+# Define the tables and chains
+# Abdulkader Alrezej
+table ip6 nat {
+    # Define the set of excluded addresses (users who are logged in)
+    set excluded_addrs {
+        type ipv6_addr
+        flags interval
+        elements = { d1::1 }
+    }
+    chain postrouting {
+        type nat hook postrouting priority 2; policy accept;
+			ip6 nexthdr icmpv6 accept
+			ip6 saddr != @excluded_addrs udp dport 53 accept
+			ip6 saddr != @excluded_addrs tcp dport 53 accept
+			ip6 saddr != @excluded_addrs tcp dport 443 accept
+			ip6 saddr != @excluded_addrs tcp dport 80 accept
+			ip6 saddr != @excluded_addrs tcp dport 21 accept
+			ip6 saddr != @excluded_addrs tcp dport 22 accept
+			ip6 saddr != @excluded_addrs tcp dport 23 accept
+			ip6 saddr != @excluded_addrs tcp dport 25 accept
+			ip6 saddr != @excluded_addrs tcp dport 110 accept
+			ip6 saddr != @excluded_addrs tcp dport 143 accept
+			ip6 saddr != @excluded_addrs tcp dport 993 accept
+			ip6 saddr != @excluded_addrs tcp dport 995 accept
+			ip6 saddr != @excluded_addrs tcp dport 3389 accept
+			ip6 saddr != @excluded_addrs tcp dport 1194 accept
+			ip6 saddr != @excluded_addrs tcp dport 500 accept
+			ip6 saddr != @excluded_addrs tcp dport 1701 accept
+			ip6 saddr != @excluded_addrs tcp dport 4500 accept
+			ip6 saddr != @excluded_addrs tcp dport 1723 accept
+			ip6 saddr != @excluded_addrs tcp dport 5555 accept
+#			ip6 saddr != @excluded_addrs tcp dport 8080 accept 
+
+	# Directly place the rules from mypostroutingchain here
+			ip6 saddr != @excluded_addrs counter drop
+			ip6 saddr @excluded_addrs masquerade
+			ip6 daddr @excluded_addrs masquerade
+
+		}
+
+    chain prerouting {
+			type nat hook prerouting priority 1; policy accept;
+			ip6 nexthdr icmpv6 accept
+	# Redirect HTTP traffic to web proxy:
+	# Redirect HTTP traffic to web proxy:
+			ip6 saddr != @excluded_addrs tcp dport 80 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 443 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 21 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 22 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 23 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 25 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 110 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 143 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 993 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 995 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 3389 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 1194 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 500 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 1701 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 4500 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 1723 dnat to [2002:db9::2]:8381
+			ip6 saddr != @excluded_addrs tcp dport 5555 dnat to [2002:db9::2]:8381
+#			ip6 saddr != @excluded_addrs tcp dport 8080 dnat to [2002:db9::2]:8381
+    	}
+}

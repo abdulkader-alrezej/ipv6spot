@@ -1,0 +1,46 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="active-table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Source IPv6</th>
+                <th>Source Port</th>
+                <th>Direction</th>
+                <th>Destination IPv6</th>
+                <th>Destination Port</th>
+            </tr>
+        </thead>
+        <tbody id="firewall-table-body">
+        </tbody>
+    </table>
+</div>
+<script>
+    function fetchFirewallData() {
+        $.ajax({
+            url: "{{ url_for('firewall_data') }}",
+            method: "GET",
+            success: function(data) {
+                let tableBody = $("#firewall-table-body");
+                tableBody.empty();
+                data.forEach(function(row) {
+                    let tableRow = `
+                        <tr>
+                            <td>${row['Source IPv6']}</td>
+                            <td>${row['Source Port']}</td>
+                            <td>${row['Direction']}</td>
+                            <td>${row['Destination IPv6']}</td>
+                            <td>${row['Destination Port']}</td>
+                        </tr>`;
+                    tableBody.prepend(tableRow);
+                });
+            },
+            error: function(error) {
+                console.log("Error fetching firewall data", error);
+            }
+        });
+    }
+    setInterval(fetchFirewallData, 5000);
+    fetchFirewallData();
+</script>
+{% endblock %}

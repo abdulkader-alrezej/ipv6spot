@@ -1,0 +1,265 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="add-users-table-container">
+    <div class="action-bar">
+        <input type="text" id="search-input" placeholder="Search for Prints">
+        <button class="search-button" id="search-btn">Search</button>
+        <button class="delete-button" id="delete-btn">Delete Selected</button>
+        <button class="add-button" id="add-btn">Add Print</button>
+        <button class="size-button" id="open-size-modal-btn">Card Size</button>
+    </div>
+<div id="size-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-size-modal">&times;</span>
+        <h2>Adjust Card Size</h2>
+        <form id="card-size-form">
+            <label for="card-width">Card Width (inches):</label>
+            <input type="number" id="card-width" name="card_width" step="0.01" value="2.0">
+            <label for="card-height">Card Height (inches):</label>
+            <input type="number" id="card-height" name="card_height" step="0.01" value="3.5">
+            <label for="x-offset">Horizontal Spacing (inches):</label>
+            <input type="number" id="x-offset" name="x_offset" step="0.01" value="0.125">
+            <label for="y-offset">Vertical Spacing (inches):</label>
+            <input type="number" id="y-offset" name="y_offset" step="0.01" value="0.125">
+            <button type="submit" class="apply-button" id="apply-size-btn">Apply</button>
+        </form>
+    </div>
+</div>
+    <table class="add-users-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"> Select All</th>
+                <th>Username</th>
+                <th>Profile</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="print-tbody">
+        </tbody>
+    </table>
+    <div id="pagination" class="pagination-container">
+    </div>
+</div>
+<div id="add-print-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add Print</h2>
+        <form id="add-print-form">
+            <div class="form-group">
+                <label for="document-name">Document Name:</label>
+                <input type="text" id="document-name" name="document-name" required>
+                <small id="document-name-error" style="color:red;display:none;">Document Name is required.</small>
+            </div>
+            <div class="form-group">
+                <label for="print-date">Print Date:</label>
+                <input type="date" id="print-date" name="print-date" required>
+            </div>
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select id="status" name="status">
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-button">Add Print</button>
+        </form>
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+    $('#add-btn').click(function() {
+        let selectedUsers = [];
+        $('input.select-row:checked').each(function() {
+            selectedUsers.push($(this).data('document'));
+        });
+        if (selectedUsers.length === 0) {
+            alert('No rows selected for printing');
+            return;
+        }
+        $.ajax({
+            url: '/add_print',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ usernames: selectedUsers }),
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function(blob) {
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'user_cards.pdf';
+                link.click();
+                alert('PDF created successfully!');
+            },
+            error: function(xhr, status, error) {
+                console.error("Error details:", xhr, status, error);
+                alert('An error occurred while creating the PDF. Please try again.');
+            }
+        });
+    });
+    $('#apply-size-btn').click(function() {
+        const cardWidth = parseFloat($('#card-width').val());
+        const cardHeight = parseFloat($('#card-height').val());
+        const xOffset = parseFloat($('#x-offset').val());
+        const yOffset = parseFloat($('#y-offset').val());
+        $.ajax({
+            url: '/set_card_size',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                card_width: cardWidth,
+                card_height: cardHeight,
+                x_offset: xOffset,
+                y_offset: yOffset
+            }),
+            success: function(response) {
+                if (response.success) {
+                    alert('Card size updated successfully.');
+                    $('#size-modal').hide();
+                } else {
+                    alert('Failed to update card size.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error details:", xhr, status, error);
+                alert('An error occurred while updating the card size. Please try again.');
+            }
+        });
+    });
+    $('#open-size-modal-btn').click(function() {
+        $.get('/get_card_size', function(data) {
+            if (data.success) {
+                $('#card-width').val(data.card_width);
+                $('#card-height').val(data.card_height);
+                $('#x-offset').val(data.x_offset);
+                $('#y-offset').val(data.y_offset);
+            }
+            $('#size-modal').show();
+        });
+    });
+    $('.close-size-modal').click(function() {
+        $('#size-modal').hide();
+    });
+    $(window).click(function(event) {
+        if (event.target.id === 'size-modal') {
+            $('#size-modal').hide();
+        }
+    });
+    $('.close').click(function() {
+        $('#add-print-modal').hide();
+    });
+    $(window).click(function(event) {
+        if (event.target.id === 'add-print-modal') {
+            $('#add-print-modal').hide();
+        }
+    });
+    $('#add-print-form').submit(function(event) {
+        event.preventDefault();
+        let documentName = $('#document-name').val().trim();
+        let printDate = $('#print-date').val();
+        let status = $('#status').val();
+
+        if (!documentName) {
+            $('#document-name-error').toggle(!documentName);
+            alert('Please fill in all required fields.');
+            return;
+        }
+        $.ajax({
+            url: '/add_print',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                document_name: documentName,
+                print_date: printDate,
+                status: status
+            }),
+            success: function(response) {
+                if (response.success) {
+                    alert('Print added successfully!');
+                    $('#add-print-modal').hide();
+                    fetchPrintData();
+                } else {
+                    alert('Error adding print: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error details:", xhr, status, error);
+                alert('An error occurred while adding the print. Please try again.');
+            }
+        });
+    });
+    $('#search-btn').click(function() {
+        fetchPrintData();
+    });
+    $('#search-input').on('keypress', function(e) {
+        if (e.which == 13) {
+            fetchPrintData();
+        }
+    });
+    function fetchPrintData() {
+        let searchQuery = $('#search-input').val();
+        $.get('/fetch_prints', { search: searchQuery }, function(data) {
+            let tbody = $('#print-tbody');
+            tbody.empty();
+            if (data.length > 0) {
+                console.log("Data fetched: ", data);
+                data.forEach(function(print) {
+                    let row = `<tr>
+                        <td><input type="checkbox" class="select-row" data-document="${print['username']}"></td>
+                        <td>${print['username']}</td>
+                        <td>${print['profile']}</td>
+                        <td>${print['date']}</td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+                updateSelectAllCheckbox();
+            } else {
+                tbody.append('<tr><td colspan="4">No prints found</td></tr>');
+            }
+        }).fail(function(xhr, status, error) {
+            console.error("Failed to fetch prints:", xhr, status, error);
+            alert('Failed to load prints. Please try again.');
+        });
+    }
+    $('#select-all').click(function() {
+        $('input.select-row').prop('checked', this.checked);
+    });
+    $('#delete-btn').click(function() {
+        let selectedDocuments = [];
+        $('input.select-row:checked').each(function() {
+            selectedDocuments.push($(this).data('document'));
+        });
+
+        if (selectedDocuments.length === 0) {
+            alert('No prints selected for deletion');
+            return;
+        }
+        $.ajax({
+    url: '/delete_prints',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ documents: selectedDocuments }),
+    success: function(response) {
+        if (response.successa) {
+            alert(response.message);
+        } else if (response.success) {
+            alert('Selected users deleted successfully');
+            fetchPrintData();
+        } else {
+            alert('Error deleting users: ' + response.message);
+        }
+    },
+    error: function(xhr, status, error) {
+        console.error("Error details:", xhr, status, error);
+        alert('An error occurred while deleting the users. Please try again.');
+    }
+});
+});
+    function updateSelectAllCheckbox() {
+        const allChecked = $('input.select-row').length === $('input.select-row:checked').length;
+        $('#select-all').prop('checked', allChecked);
+    }
+    fetchPrintData();
+});
+</script>
+{% endblock %}

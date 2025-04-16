@@ -1,0 +1,194 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="action-bar">
+    <input type="text" id="search-input" placeholder="Search by Name">
+    <button id="search-button" class="search-button">Search</button>
+    <button id="add-profile-btn" class="add-button">Add</button>
+    <button id="delete-selected" class="delete-button">Delete Selected</button>
+</div>
+<div class="active-table-container">
+    <table id="user-profiles-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>Name</th>
+                <th>Download Limit</th>
+                <th>Upload Limit</th>
+                <th>Data Limit</th>
+                <th>Day limit</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<div id="add-profile-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add New Profile</h2>
+        <form id="add-profile-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="download_speed">Download Limit:</label>
+            <div class="input-group">
+                <input type="number" id="download_speed" name="download_speed" required>
+                <select id="download_unit" name="download_unit">
+                    <option value="mbit">Mbps</option>
+                    <option value="kbit">Kbps</option>
+                </select>
+            </div>
+            <label for="upload_speed">Upload Limit:</label>
+            <div class="input-group">
+                <input type="number" id="upload_speed" name="upload_speed" required>
+                <select id="upload_unit" name="upload_unit">
+                    <option value="mbit">Mbps</option>
+                    <option value="kbit">Kbps</option>
+                </select>
+            </div>
+            <label for="max_data">Data Limit:</label>
+            <div class="input-group">
+                <input type="number" id="max_data" name="max_data" required>
+                <select id="data_unit" name="data_unit">
+                    <option value="byte">Bytes</option>
+                    <option value="kbyte">Kbyte</option>
+                    <option value="mbyte">Mbyte</option>
+                </select>
+            </div>
+            <label for="allowed_days">Day Limit:</label>
+            <input type="number" id="allowed_days" name="allowed_days" required>
+            
+            <button type="submit" class="submit-button">Add Profile</button>
+        </form>
+    </div>
+</div>
+<div id="saving-modal" class="modal">
+    <div class="modal-content">
+        <p>Saving... Please wait.</p>
+    </div>
+</div>
+<div id="notification-modal" class="modal">
+    <div class="modal-content">
+        <p id="notification-message"></p>
+        <button id="notification-close" class="submit-button">OK</button>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        function loadProfiles(query = '') {
+            $.get("{{ url_for('user_profiles_data') }}", {search: query}, function(data) {
+                var tbody = $("#user-profiles-table tbody");
+                tbody.empty();
+                $.each(data, function(index, profile) {
+                    var row = "<tr>";
+                    row += "<td><input type='checkbox' class='select-row' data-name='" + profile["Name"] + "'></td>";
+                    row += "<td>" + profile["Name"] + "</td>";
+                    row += "<td>" + profile["Download Limit"] + "</td>";
+                    row += "<td>" + profile["Upload Limit"] + "</td>";
+                    row += "<td>" + profile["Data Limit"] + "</td>";
+                    row += "<td>" + profile["Day limit"] + "</td>";
+                    row += "</tr>";
+                    tbody.append(row);
+                });
+            }).fail(function() {
+                console.error("Failed to fetch user profiles data");
+            });
+        }
+        loadProfiles();
+        $('#search-button').click(function() {
+            var query = $('#search-input').val().trim();
+            loadProfiles(query);
+        });
+        $('#search-input').on('keyup', function() {
+            var query = $(this).val().trim();
+            loadProfiles(query);
+        });
+        $('#add-profile-btn').click(function() {
+            $('#add-profile-modal').css('display', 'block');
+        });
+        $('.close').click(function() {
+            $('#add-profile-modal').css('display', 'none');
+        });
+        $('#notification-close').click(function() {
+            $('#notification-modal').css('display', 'none');
+            location.reload();
+        });
+        $('#add-profile-form').submit(function(event) {
+            event.preventDefault();
+            $('#saving-modal').css('display', 'block');
+            var name = $('#name').val().trim();
+            if (name === '') {
+                alert('Name is required.');
+                $('#saving-modal').css('display', 'none');
+                return;
+            }
+            $.get("{{ url_for('check_name_exists') }}", {name: name}, function(data) {
+                if (data.exists) {
+                    $('#saving-modal').css('display', 'none');
+                    alert('Name already exists.');
+                } else {
+                    var download_speed = $('#download_speed').val() + $('#download_unit').val();
+                    var upload_speed = $('#upload_speed').val() + $('#upload_unit').val();
+                    
+                    var max_data = $('#max_data').val();
+                    var data_unit = $('#data_unit').val();
+                    if (data_unit === 'kbyte') {
+                        max_data *= 1024;
+                    } else if (data_unit === 'mbyte') {
+                        max_data *= 1024 * 1024;
+                    }
+                    var formData = {
+                        name: name,
+                        download_speed: download_speed,
+                        upload_speed: upload_speed,
+                        max_data: max_data,
+                        allowed_days: $('#allowed_days').val()
+                    };
+
+                    $.post("{{ url_for('add_user_profile') }}", formData, function(response) {
+                        $('#saving-modal').css('display', 'none');
+                        if (response.success) {
+                            $('#notification-message').text('Profile added successfully.');
+                        } else {
+                            console.error("Error from server:", response.message);
+                            $('#notification-message').text('Error adding profile: ' + response.message);
+                        }
+                        $('#notification-modal').css('display', 'block');
+                    });
+                }
+            });
+        });
+        $('#select-all').click(function() {
+            $('.select-row').prop('checked', this.checked);
+        });
+        $('#delete-selected').click(function() {
+            var selectedNames = [];
+            $('.select-row:checked').each(function() {
+                selectedNames.push($(this).data('name'));
+            });
+            if (selectedNames.length > 0) {
+                if (confirm("Are you sure you want to delete the selected profiles?")) {
+                    $.ajax({
+                        url: "{{ url_for('delete_user_profiles') }}",
+                        type: 'POST',
+                        data: JSON.stringify({names: selectedNames}),
+                        contentType: 'application/json',
+                        success: function(response) {
+                            if (response.success) {
+                                location.reload(); 
+                            } else {
+                                alert('Error deleting profiles: ' + response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Failed to delete profiles.');
+                        }
+                    });
+                }
+            } else {
+                alert('Please select at least one profile to delete.');
+            }
+        });
+
+    });
+</script>
+{% endblock %}

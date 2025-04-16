@@ -1,0 +1,32 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="active-traffic-table-container">
+    <table class="active-traffic-table">
+        <thead>
+            <tr>
+                <th>Session ID</th>
+                <th>User Name</th>
+                <th>Up</th>
+                <th>Down</th>
+            </tr>
+        </thead>
+        <tbody id="activeTrafficTableBody">
+        </tbody>
+    </table>
+</div>
+<script>
+    function updateActiveTraffic() {
+        $.getJSON("{{ url_for('active_traffic_data') }}", function(data) {
+            let tbody = $('#activeTrafficTableBody');
+            tbody.empty();
+            $.each(data, function(index, session) {
+                tbody.append('<tr><td>' + session['Session ID'] + '</td><td>' + session['User Name'] + '</td><td>' + session['Up'] + '</td><td>' + session['Down'] + '</td></tr>');
+            });
+        });
+    }
+    $(document).ready(function() {
+        updateActiveTraffic();
+        setInterval(updateActiveTraffic, 1000);
+    });
+</script>
+{% endblock %}

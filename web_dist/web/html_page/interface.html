@@ -1,0 +1,69 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="interface-container">
+    <div class="interface-box" id="LAN">
+        <h2>LAN</h2>
+        <p id="lan-upload">Upload: </p>
+        <p id="lan-download">Download: </p>
+        <p id="lan-sent">Sent: </p>
+        <p id="lan-received">Received: </p>
+    </div>
+    <div class="interface-box" id="WAN">
+        <h2>WAN</h2>
+        <p id="wan-upload">Upload: </p>
+        <p id="wan-download">Download: </p>
+        <p id="wan-sent">Sent: </p>
+        <p id="wan-received">Received: </p>
+    </div>
+    <div class="interface-box" id="NAT64">
+        <h2>NAT64</h2>
+        <p id="nat64-upload">Upload: </p>
+        <p id="nat64-download">Download: </p>
+        <p id="nat64-sent">Sent: </p>
+        <p id="nat64-received">Received: </p>
+    </div>
+</div>
+<div class="interface-table-container">
+    <table class="interface-table">
+        <thead>
+            <tr>
+                <th>Interface</th>
+                <th>Upload Rate</th>
+                <th>Download Rate</th>
+                <th>Sent</th>
+                <th>Received</th>
+            </tr>
+        </thead>
+        <tbody id="interface-data-body">
+        </tbody>
+    </table>
+</div>
+<script>
+    function updateInterfaceData() {
+        fetch('/interface_data')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(entry => {
+                    let interfaceID = entry.interface.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                    document.getElementById(interfaceID + '-upload').innerText = "Upload: " + entry.upload_rate;
+                    document.getElementById(interfaceID + '-download').innerText = "Download: " + entry.download_rate;
+                    document.getElementById(interfaceID + '-sent').innerText = "Sent: " + entry.sent_total;
+                    document.getElementById(interfaceID + '-received').innerText = "Received: " + entry.received_total;
+                });
+                let tbody = document.getElementById('interface-data-body');
+                tbody.innerHTML = '';
+                data.forEach(entry => {
+                    let row = `<tr>
+                                  <td>${entry.interface}</td>
+                                  <td>${entry.upload_rate}</td>
+                                  <td>${entry.download_rate}</td>
+                                  <td>${entry.sent_total}</td>
+                                  <td>${entry.received_total}</td>
+                               </tr>`;
+                    tbody.innerHTML += row;
+                });
+            });
+    }
+    setInterval(updateInterfaceData, 1000);
+</script>
+{% endblock %}

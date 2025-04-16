@@ -1,0 +1,43 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="traffic-control-table-container">
+    <table class="traffic-control-table">
+        <thead>
+            <tr>
+                <th>Session ID</th>
+                <th>User Name</th>
+                <th>IP Addresses</th>
+                <th>Upload Rate</th>
+                <th>Download Rate</th>
+            </tr>
+        </thead>
+        <tbody id="trafficControlData">
+            <tr>
+                <td colspan="5">Loading data...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+$(document).ready(function() {
+    function updateTrafficControlData() {
+        $.get('/traffic_control_data', function(data) {
+            let tableBody = $('#trafficControlData');
+            tableBody.empty();
+            data.forEach(function(row) {
+                let newRow = `<tr>
+                    <td>${row['Session ID']}</td>
+                    <td>${row['User Name']}</td>
+                    <td>${row['IP Addresses']}</td>
+                    <td>${row['Upload Rate']}</td>
+                    <td>${row['Download Rate']}</td>
+                </tr>`;
+                tableBody.append(newRow);
+            });
+        });
+    }
+    setInterval(updateTrafficControlData, 1000);
+    updateTrafficControlData();
+});
+</script>
+{% endblock %}

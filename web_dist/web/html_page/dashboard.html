@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPv6Spot Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script>
+$(document).ready(function() {
+    $('#toggleSidebar').click(function() {
+        $('.sidebar').toggleClass('collapsed');
+        $('.content').toggleClass('expanded');
+    });
+
+    
+    function updateTime() {
+        let now = new Date();
+        let hours = now.getHours().toString().padStart(2, '0');
+        let minutes = now.getMinutes().toString().padStart(2, '0');
+        let seconds = now.getSeconds().toString().padStart(2, '0');
+        let day = now.getDate().toString().padStart(2, '0');
+        let month = (now.getMonth() + 1).toString().padStart(2, '0');
+        let year = now.getFullYear();
+        let formattedTime = `Time: ${hours}:${minutes}:${seconds} ${day}-${month}-${year}`;
+        $('#currentTime').text(formattedTime);
+    }
+
+    function updateCPUUsage() {
+        $.get('/cpu_usage', function(data) {
+            $('#cpu-usage').text(`CPU: ${data.cpu_usage}%`);
+        });
+    }
+
+    function updateUptime() {
+        $.get('/uptime', function(data) {
+            $('#uptime').text(`Uptime: ${data.uptime}`);
+        });
+    }
+
+    setInterval(updateTime, 1000);
+    setInterval(updateCPUUsage, 1000); 
+    setInterval(updateUptime, 1000); 
+    updateTime();
+    updateCPUUsage();
+    updateUptime();
+    $('#reboot-btn').click(function() {
+        if (confirm('Are you sure you want to reboot the system?')) {
+            $.post('/reboot', function(data) {
+                alert(data.message);
+                $('body').html('<h1>System is rebooting... Please wait.</h1>');
+            }).fail(function() {
+                alert('Reboot failed or not allowed.');
+            });
+        }
+    });
+});
+    </script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="left-side">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+            <h1>IPv6Spot</h1>
+        </div>
+        <div class="right-side">
+            <span id="cpu-usage">CPU: Loading...</span>
+            <span id="uptime">Uptime: Loading...</span>
+            <span id="currentTime">Time: Loading...</span>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            <a href="#" id="reboot-btn" class="logout-btn">Reboot</a>
+        </div>
+    </div>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <button id="toggleSidebar">☰</button>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('active') }}">Active Sessions</a></li>
+                <li><a href="{{ url_for('interface') }}">Network Interfaces</a></li>
+                <li><a href="{{ url_for('firewall') }}">Firewall Connections</a></li>
+                <li><a href="{{ url_for('active_traffic') }}">Active Traffic</a></li>
+                <li><a href="{{ url_for('traffic_control') }}">Traffic Control</a></li>
+                <li><a href="{{ url_for('user_profiles') }}">User Profiles</a></li>
+                <li><a href="{{ url_for('add_users') }}">Add Users</a></li>
+                <li><a href="{{ url_for('add_one') }}">Add One</a></li>
+                <li><a href="{{ url_for('print_page') }}">Print</a></li>
+                <li><a href="{{ url_for('user_usage') }}">User Usage</a></li>
+                <li><a href="{{ url_for('block_website') }}">Block Website</a></li>
+                <li><a href="{{ url_for('settings') }}">Settings</a></li>
+                <li><a href="{{ url_for('db_management') }}">Database Management</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>

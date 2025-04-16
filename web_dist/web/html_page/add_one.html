@@ -1,0 +1,417 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="add-users-table-container">
+    <div class="action-bar">
+        <input type="text" id="search-input" placeholder="Search Users">
+        <button class="search-button" id="search-btn">Search</button>
+        <button class="delete-button" id="delete-btn">Delete Selected</button>
+        <button class="add-button" id="add-btn">Add</button>
+    </div>
+    <table class="add-users-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"> Select All</th>
+                <th>User Name</th>
+                <th>Password</th>
+                <th>Download</th>
+                <th>Upload</th>
+                <th>Data Limit</th>
+                <th>Day Limit</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="add-users-tbody">
+        </tbody>
+    </table>
+    <div id="pagination" class="pagination-container">
+    </div>
+</div>
+<div id="add-user-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add One User</h2>
+        <form id="add-one-user-form">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                <small id="username-error" style="color:red;display:none;">Username is required.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <small id="password-error" style="color:red;display:none;">Password is required.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="download_speed">Download:</label>
+                <div class="input-with-unit">
+                    <input type="text" id="download_speed" name="download_speed" required>
+                    <select id="download_unit" name="download_unit">
+                        <option value="Mbps">Mbps</option>
+                        <option value="Kbps">Kbps</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="upload_speed">Upload:</label>
+                <div class="input-with-unit">
+                    <input type="text" id="upload_speed" name="upload_speed" required>
+                    <select id="upload_unit" name="upload_unit">
+                        <option value="Mbps">Mbps</option>
+                        <option value="Kbps">Kbps</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="max_data">Data Limit:</label>
+                <div class="input-with-unit">
+                    <input type="text" id="max_data" name="max_data" required>
+                    <select id="data_unit" name="data_unit">
+                        <option value="Mbyte">Mbyte</option>
+                        <option value="Kbyte">Kbyte</option>
+                        <option value="Byte">Byte</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="allowed_days">Day Limit:</label>
+                <input type="text" id="allowed_days" name="allowed_days" required>
+            </div>
+
+            <button type="submit" class="submit-button">Add User</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .add-users-table-container {
+        flex-grow: 1;
+        width: 100%;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+    }
+    .add-users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .add-users-table, th, td {
+        border: 1px solid #dddddd;
+    }
+    th, td {
+        padding: 12px;
+        text-align: left;
+    }
+    th {
+        background-color: #495057;
+        color: white;
+    }
+    tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    tbody tr:hover {
+        background-color: #e9ecef;
+    }
+    .add-users-table-container::-webkit-scrollbar {
+        width: 12px;
+    }
+    .add-users-table-container::-webkit-scrollbar-thumb {
+        background-color: #495057;
+        border-radius: 8px;
+    }
+    .add-users-table-container::-webkit-scrollbar-thumb:hover {
+        background-color: #343a40;
+    }
+    .add-users-table-container::-webkit-scrollbar-track {
+        background-color: #e9ecef;
+        border-radius: 8px;
+    }
+    .highlight-red {
+        background-color: rgba(255, 0, 0, 0.2) !important;
+    }
+    .pagination-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .pagination-container .page {
+        display: inline-block;
+        margin: 0 5px;
+        padding: 5px 10px;
+        background-color: #ccc;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .pagination-container .page.active {
+        background-color: #616161;
+    }
+    .pagination-container .page.disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        width: 100%;
+        max-width: 400px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: left;
+    }
+    .modal-content label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .modal-content input[type="text"], 
+    .modal-content input[type="password"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .modal-content .form-group {
+        margin-bottom: 15px;
+    }
+    .modal-content .input-with-unit {
+        display: flex;
+        align-items: center;
+    }
+    .modal-content .input-with-unit input {
+        flex: 1;
+        margin-right: 10px;
+    }
+    .modal-content .input-with-unit select {
+        flex-basis: 30%;
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .submit-button {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .submit-button:hover {
+        background-color: #218838;
+    }
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        transition: color 0.2s ease;
+    }
+    .close:hover, .close:focus {
+        color: #333;
+        cursor: pointer;
+    }
+    .password-container {
+        display: flex;
+        align-items: center;
+    }
+    .password-container input {
+        border: none;
+        background: none;
+        font-size: inherit;
+        padding: 0;
+        flex-grow: 1;
+    }
+
+    .password-container button {
+        background: none;
+        border: none;
+        font-size: 12px;
+        margin-left: 5px;
+        cursor: pointer;
+        color: #007bff;
+    }
+    .password-container button:hover {
+        text-decoration: underline;
+    }
+</style>
+<script>
+$(document).ready(function() {
+    $('#add-btn').click(function() {
+        $('#add-user-modal').show();
+    });
+    $('.close').click(function() {
+        $('#add-user-modal').hide();
+    });
+    $(window).click(function(event) {
+        if (event.target.id === 'add-user-modal') {
+            $('#add-user-modal').hide();
+        }
+    });
+    $('#add-one-user-form').submit(function(event) {
+        event.preventDefault();
+        
+        let username = $('#username').val().trim();
+        let original_password = $('#password').val().trim();
+        let download_speed = $('#download_speed').val().trim() + $('#download_unit').val();
+        let upload_speed = $('#upload_speed').val().trim() + $('#upload_unit').val();
+        let max_data_value = $('#max_data').val().trim();
+        let max_data_unit = $('#data_unit').val();
+        let allowed_days = $('#allowed_days').val().trim();
+        if (!username || !original_password) {
+            $('#username-error').toggle(!username);
+            $('#password-error').toggle(!original_password);
+            alert('Please fill in all required fields.');
+            return;
+        }
+        $.ajax({
+            url: '/add_one_user',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                username: username,
+                original_password: original_password,
+                download_speed: download_speed,
+                upload_speed: upload_speed,
+                max_data: max_data_value,  
+                data_unit: max_data_unit, 
+                allowed_days: allowed_days,
+                profile_using: 0
+            }),
+            success: function(response) {
+                if (response.success) {
+                    alert('User added successfully!');
+                    $('#add-user-modal').hide();
+                    fetchData(); 
+                } else {
+                    alert('Error adding user: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error details:", xhr, status, error);
+                alert('An error occurred while adding the user. Please try again.');
+            }
+        });
+    });
+    $('#search-btn').click(function() {
+        fetchData();
+    });
+
+    $('#search-input').on('keypress', function(e) {
+        if (e.which == 13) {
+            fetchData();
+        }
+    });
+    function fetchData() {
+        let searchQuery = $('#search-input').val();
+        $.get('/add_one_data', { search: searchQuery }, function(data) { 
+            let tbody = $('#add-users-tbody');
+            tbody.empty();
+            if (data.length > 0) {
+                data.forEach(function(user) {
+                    let rowClass = user['reason'] ? 'highlight-red' : '';
+
+                    let row = `<tr class="${rowClass}">
+                        <td><input type="checkbox" class="select-row" data-username="${user['username']}"></td>
+                        <td>${user['username']}</td>
+                        <td>
+                            <span class="password-container">
+                                <input type="password" value="${user['original_password']}" readonly>
+                                <button type="button" class="toggle-password">Show</button>
+                            </span>
+                        </td>
+                        <td>${user['download_speed']}</td>
+                        <td>${user['upload_speed']}</td>
+                        <td>${user['max_data']}</td>
+                        <td>${user['allowed_days']}</td>
+                        <td>${user['description']}</td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+                attachTogglePassword();
+                updateSelectAllCheckbox();
+            } else {
+                tbody.append('<tr><td colspan="8">No users found</td></tr>');
+            }
+        }).fail(function(xhr, status, error) {
+            console.error("Failed to fetch data:", xhr, status, error);
+            alert('Failed to load data. Please try again.');
+        });
+    }
+    function attachTogglePassword() {
+        $('.toggle-password').off('click').on('click', function() {
+            let input = $(this).siblings('input');
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                $(this).text('Hide');
+            } else {
+                input.attr('type', 'password');
+                $(this).text('Show');
+            }
+        });
+    }
+    $('#select-all').click(function() {
+        $('input.select-row').prop('checked', this.checked);
+    });
+    $('#delete-btn').click(function() {
+        let selectedUsers = [];
+        $('input.select-row:checked').each(function() {
+            selectedUsers.push($(this).data('username'));
+        });
+
+        if (selectedUsers.length === 0) {
+            alert('No users selected for deletion');
+            return;
+        }
+        $.ajax({
+            url: '/delete_users',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ usernames: selectedUsers }),
+            success: function(response) {
+                if (response.success) {
+                    alert('Selected users deleted successfully');
+                    fetchData();
+                } else {
+                    alert('Error deleting users: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error details:", xhr, status, error);
+                alert('An error occurred while deleting the users. Please try again.');
+            }
+        });
+    });
+    function updateSelectAllCheckbox() {
+        const allChecked = $('input.select-row').length === $('input.select-row:checked').length;
+        $('#select-all').prop('checked', allChecked);
+    }
+    fetchData();
+});
+</script>
+{% endblock %}

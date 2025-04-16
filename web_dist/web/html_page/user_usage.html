@@ -1,0 +1,110 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<div class="user-usage-table-container">
+    <div class="action-bar">
+        <input type="text" id="search-input" placeholder="Search Username">
+        <button class="search-button" id="search-btn">Search</button>
+        <label for="rows-per-page">Rows per page:</label>
+        <select id="rows-per-page">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </select>
+    </div>
+    <table id="userUsageTable">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>First Login</th>
+                <th>Download Usage</th>
+                <th>Upload Usage</th>
+                <th>Usage Total</th>
+                <th>Days Used</th>
+                <th>Login Times</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <div id="pagination" class="pagination-container">
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        fetchData();
+        $('#rows-per-page').change(function() {
+            rowsPerPage = $(this).val();
+            currentPage = 1;
+            fetchData();
+        });
+        $('#search-btn').click(function() {
+            currentPage = 1; 
+            fetchData();
+        });
+        function fetchData() {
+            let searchQuery = $('#search-input').val();
+            $.get("{{ url_for('user_usage_data') }}", { search: searchQuery }, function(data) {
+                let tbody = $('#userUsageTable tbody');
+                tbody.empty();
+                if (searchQuery === '') {
+                    let totalRows = data.length;
+                    let totalPages = Math.ceil(totalRows / rowsPerPage);
+                    let startIndex = (currentPage - 1) * rowsPerPage;
+                    let endIndex = startIndex + parseInt(rowsPerPage);
+                    let paginatedData = data.slice(startIndex, endIndex);
+                    renderTable(paginatedData);
+                    renderPagination(totalPages);
+                } else {
+                    renderTable(data);
+                    $('#pagination').empty();
+                }
+            });
+        }
+        function renderTable(data) {
+            let tbody = $('#userUsageTable tbody');
+            tbody.empty();
+            data.forEach(function(user) {
+                let usagePercentage = Math.round(user['Usage Total']);
+                let progressBarColor;
+                if (usagePercentage <= 45) {
+                    progressBarColor = '#28a745'; 
+                } else if (usagePercentage <= 75) {
+                    progressBarColor = '#ffc107'; 
+                } else {
+                    progressBarColor = '#dc3545'; 
+                }
+                let row = `<tr>
+                    <td>${user['Username']}</td>
+                    <td>${user['First Login']}</td>
+                    <td>${user['Download Usage']}</td>
+                    <td>${user['Upload Usage']}</td>
+                    <td><div class="progress-bar"><div class="progress" style="width: ${usagePercentage}%; background-color: ${progressBarColor};"><span class="progress-text">${usagePercentage}%</span></div></div></td>
+                    <td>${user['Days Used']}</td>
+                    <td>${user['Login Times']}</td>
+                </tr>`;
+                tbody.append(row);
+            });
+        }
+        function renderPagination(totalPages) {
+            let pagination = $('#pagination');
+            pagination.empty();
+
+            for (let i = 1; i <= totalPages; i++) {
+                let pageClass = i === currentPage ? 'page active' : 'page';
+                pagination.append(`<span class="${pageClass}" data-page="${i}">${i}</span>`);
+            }
+
+            $('.page').click(function() {
+                if (!$(this).hasClass('active')) {
+                    currentPage = parseInt($(this).data('page'));
+                    fetchData();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

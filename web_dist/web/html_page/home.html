@@ -1,0 +1,97 @@
+{% extends "dashboard.html" %}
+{% block content %}
+    <div class="dashboard-cards-container">
+        <div class="dashboard-card">
+            <h3>Active Sessions</h3>
+            <p id="active-sessions-count">{{ active_count }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Expired Days</h3>
+            <p>{{ expired_days_count }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Expired Data</h3>
+            <p>{{ expired_data_count }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Unused Cards</h3>
+            <p>{{ unused_cards_count }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Total Cards</h3>
+            <p>{{ total_cards_count }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Total Expired Cards</h3>
+            <p>{{ total_expired_cards_count }}</p>
+        </div>
+        <div class="dashboard-card" id="wan-card">
+            <h3>WAN Traffic</h3>
+            <p id="wan-upload">Upload: Loading...</p>
+            <p id="wan-download">Download: Loading...</p>
+        </div>
+        <div class="dashboard-card" id="lan-card">
+            <h3>LAN Traffic</h3>
+            <p id="lan-upload">Upload: Loading...</p>
+            <p id="lan-download">Download: Loading...</p>
+        </div>
+    </div>  
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script>
+        function updateTrafficData() {
+            fetch('/interface_data')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(entry => {
+                        if (entry.interface === 'WAN') {
+                            document.getElementById('wan-upload').innerText = "Upload: " + entry.upload_rate;
+                            document.getElementById('wan-download').innerText = "Download: " + entry.download_rate;
+                        }
+                        if (entry.interface === 'LAN') {
+                            document.getElementById('lan-upload').innerText = "Upload: " + entry.upload_rate;
+                            document.getElementById('lan-download').innerText = "Download: " + entry.download_rate;
+                        }
+                    });
+                });
+        }
+        $(document).ready(function() {
+            setInterval(updateTrafficData, 1000);
+        });
+    </script>
+    <style>
+        .dashboard-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .dashboard-card {
+            width: 280px;
+            height: 150px;
+            background-color: #495057;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            margin: 5px;
+            border: 1px solid #6c757d;
+        }
+        .dashboard-card:hover {
+            transform: scale(1.05);
+            background-color: #6c757d;
+        }
+        .dashboard-card h3 {
+            margin: 0;
+            font-size: 25px;
+        }
+        .dashboard-card p {
+            margin: 5px 0 0 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}

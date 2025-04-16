@@ -1,0 +1,187 @@
+{% extends "dashboard.html" %}
+{% block content %}
+    <div class="settings-container">
+        <h2>Settings</h2>
+        <div class="settings-row">
+            <div class="settings-section left-section">
+                <h3>Change Password</h3>
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <div class="password-group">
+                            <input type="password" id="current-password" class="form-control" required>
+                            <button type="button" onclick="togglePasswordVisibility('current-password')" class="toggle-password-btn">Show</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <div class="password-group">
+                            <input type="password" id="new-password" class="form-control" required>
+                            <button type="button" onclick="togglePasswordVisibility('new-password')" class="toggle-password-btn">Show</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-new-password">Confirm New Password</label>
+                        <div class="password-group">
+                            <input type="password" id="confirm-new-password" class="form-control" required>
+                            <button type="button" onclick="togglePasswordVisibility('confirm-new-password')" class="toggle-password-btn">Show</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+            <div class="settings-section right-section">
+                <h3>Change Network Name</h3>
+                <div class="form-group">
+                    <label>Current Network Name:</label>
+                    <p id="current-network-name"></p>
+                </div>
+                <form id="change-network-name-form">
+                    <div class="form-group">
+                        <label for="new-network-name">New Network Name</label>
+                        <input type="text" id="new-network-name" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function loadCurrentNetworkName() {
+            $.get("{{ url_for('get_current_network_name') }}", function(data) {
+                if (data.success) {
+                    $('#current-network-name').text(data.current_network_name);
+                } else {
+                    $('#current-network-name').text('Error loading network name');
+                }
+            });
+        }
+        $(document).ready(function() {
+            loadCurrentNetworkName();
+        });
+        function togglePasswordVisibility(fieldId) {
+            var field = document.getElementById(fieldId);
+            var toggleBtn = field.nextElementSibling;
+            if (field.type === "password") {
+                field.type = "text";
+                toggleBtn.textContent = "Hide";
+            } else {
+                field.type = "password";
+                toggleBtn.textContent = "Show";
+            }
+        }
+        $('#change-password-form').on('submit', function(event) {
+            event.preventDefault();
+            let currentPassword = $('#current-password').val().trim();
+            let newPassword = $('#new-password').val().trim();
+            let confirmNewPassword = $('#confirm-new-password').val().trim();
+            if (newPassword !== confirmNewPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+            $.ajax({
+                url: "{{ url_for('change_password') }}",
+                type: "POST",
+                data: {
+                    current_password: currentPassword,
+                    new_password: newPassword
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Password changed successfully.');
+                        $('#current-password').val('');
+                        $('#new-password').val('');
+                        $('#confirm-new-password').val('');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                }
+            });
+        });
+        $('#change-network-name-form').on('submit', function(event) {
+            event.preventDefault();
+            let newNetworkName = $('#new-network-name').val().trim();
+            $.ajax({
+                url: "{{ url_for('change_network_name') }}",
+                type: "POST",
+                data: {
+                    new_network_name: newNetworkName
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Network name changed successfully.');
+                        $('#new-network-name').val('');
+                        loadCurrentNetworkName();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                }
+            });
+        });
+    </script>
+    <style>
+        .settings-container {
+            width: 100%;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .settings-section {
+            width: 48%;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .password-group {
+            display: flex;
+            align-items: center;
+        }
+        .form-group input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .toggle-password-btn {
+            margin-left: 10px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        #current-network-name {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+{% endblock %}

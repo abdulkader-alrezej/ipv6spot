@@ -1,0 +1,144 @@
+{% extends "dashboard.html" %}
+{% block content %}
+    <div class="db-management-container">
+        <h2>Database Management</h2>
+        <div class="db-management-actions">
+            <div class="db-action">
+                <button id="backup-db-btn" class="btn action-button">Backup Database</button>
+            </div>
+            <div class="db-action">
+                <input type="file" id="restore-file" style="display: none;" accept=".encrypted">
+                <button id="restore-db-btn" class="btn action-button">Restore Database</button>
+            </div>
+        </div>
+        <div class="backup-list">
+            <h3>Backup Files</h3>
+            <table class="backup-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                    <tr>
+                        <td>{{ file.name }}</td>
+                        <td>{{ file.date }}</td>
+                        <td><a href="{{ url_for('download_backup', filename=file.name) }}" class="btn action-button">Download</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+$(document).ready(function() {
+    $('#backup-db-btn').click(function() {
+        $.get("{{ url_for('backup_database') }}", function(response) {
+            if (response.success) {
+                alert('Database backup successful.');
+                location.reload();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        }).fail(function(xhr, status, error) {
+            console.error("Backup request failed:", error);
+            alert('Error: ' + xhr.responseText || error);
+        });
+    });
+    $('#restore-db-btn').click(function() {
+        $('#restore-file').click();
+    });
+    $('#restore-file').change(function() {
+        let file = this.files[0];
+        let formData = new FormData();
+        formData.append('file', file);
+        console.log("Sending restore request...");
+        $.ajax({
+            url: "{{ url_for('restore_database') }}",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                console.log("Response received:", response);
+                if (response.success) {
+                    alert('Database restored successfully.');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+                $('#restore-file').val('');
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+                let errorMessage = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : "An unknown error occurred.";
+                alert('Error: ' + errorMessage);
+                $('#restore-file').val('');
+            }
+        });
+    });
+});
+    </script>
+    <style>
+        .db-management-container {
+            width: 100%;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .db-management-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .db-action {
+            display: flex;
+            justify-content: center;
+        }
+        .btn.action-button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            transition: background-color 0.3s ease;
+            width: 200px;
+        }
+        .btn.action-button:hover {
+            background-color: #218838;
+        }
+        .backup-list {
+            margin-top: 30px;
+        }
+        .backup-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .backup-table, th, td {
+            border: 1px solid #dddddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #495057;
+            color: white;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tbody tr:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+{% endblock %}

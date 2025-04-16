@@ -1,0 +1,47 @@
+{% extends "dashboard.html" %}
+{% block content %}
+    <div class="active-table-container">
+        <table id="sessionsTable">
+            <thead>
+                <tr>
+                    <th>Session ID</th>
+                    <th>User Name</th>
+                    <th>Start Session</th>
+                    <th>Session Time</th>
+                    <th>IPv6</th>
+                    <th>Link-Local</th>
+                    <th>Download</th>
+                    <th>Upload</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script>
+        function fetchSessions() {
+            $.getJSON("{{ url_for('active_data') }}", function(data) {
+                let tableContent = '';
+                $.each(data, function(index, session) {
+                    tableContent += '<tr>';
+                    tableContent += '<td>' + session['Session ID'] + '</td>';
+                    tableContent += '<td>' + session['User Name'] + '</td>';
+                    tableContent += '<td>' + session['Start Session'] + '</td>';
+                    tableContent += '<td>' + session['Session Time'] + '</td>';
+                    tableContent += '<td>' + session['IP'] + '</td>';
+                    tableContent += '<td>' + session['Link'] + '</td>';
+                    tableContent += '<td>' + session['Down'] + '</td>';
+                    tableContent += '<td>' + session['Up'] + '</td>';
+                    tableContent += '</tr>';
+                });
+                $('#sessionsTable tbody').html(tableContent);
+            });
+        }
+
+        $(document).ready(function() {
+            fetchSessions();
+            setInterval(fetchSessions, 1000);
+        });
+    </script>
+{% endblock %}
